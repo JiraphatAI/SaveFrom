@@ -2,103 +2,121 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>เข้าสู่ระบบ - THE GREAT AUTO</title>
+  <title>เข้าสู่ระบบ | THE GREAT AUTO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f7f7f7;
+      font-family: 'Prompt', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      margin: 0;
+      padding: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      color: #333;
     }
-    .login-box {
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 340px;
+
+    .login-container {
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       text-align: center;
+      max-width: 360px;
+      width: 100%;
+      transition: all 0.3s ease-in-out;
     }
+
     .logo {
       width: 80px;
       margin-bottom: 10px;
     }
-    h2 {
-      color: #0a3d62;
-      margin-bottom: 20px;
+
+    .company-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 30px;
     }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
+
+    input[type="text"], input[type="password"] {
       width: 100%;
       padding: 12px;
-      margin-top: 20px;
-      background: #0a3d62;
-      color: white;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      border-color: #ffc107;
+      outline: none;
+      box-shadow: 0 0 5px rgba(255, 193, 7, 0.4);
+    }
+
+    button {
+      background: #ffc107;
+      color: #000;
+      padding: 12px 24px;
+      font-size: 16px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
+      width: 100%;
+      transition: 0.3s;
     }
+
     button:hover {
-      background: #3c6382;
+      background: #e0a800;
     }
+
     .error {
       color: red;
       margin-top: 15px;
-      font-size: 14px;
-    }
-    .brand {
       font-weight: bold;
-      color: #d4af37;
-      margin-top: 5px;
-      font-size: 13px;
+    }
+
+    @media screen and (max-width: 500px) {
+      .login-container {
+        padding: 25px 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <img src="logo.png" alt="THE GREAT AUTO" class="logo" />
-    <div class="brand">THE GREAT AUTO</div>
-    <h2>เข้าสู่ระบบ</h2>
-    <input type="text" id="username" placeholder="ชื่อผู้ใช้">
-    <input type="password" id="password" placeholder="รหัสผ่าน">
-    <button onclick="login()">🔐 เข้าสู่ระบบ</button>
+
+  <div class="login-container">
+    <img class="logo" src="Img/LOGOTHEGREAT.png" alt="Logo" />
+    <div class="company-name">THE GREAT AUTO</div>
+    <input type="text" id="username" placeholder="ชื่อผู้ใช้ (Username)">
+    <input type="password" id="password" placeholder="รหัสผ่าน (Password)">
+    <button onclick="login()">เข้าสู่ระบบ</button>
     <div class="error" id="error"></div>
   </div>
 
   <script>
-    const loginURL = "https://script.google.com/macros/s/AKfycby7zYWltf5mu526aKHI4Mx19kPdC-5ALjX_mWE33NZ39pIvFQk4MfMW3MTgbyLjIYvxkA/exec";
+    const users = {
+      "aot":    { password: "1234", page: "AOT.html" },
+      "admin":  { password: "9999", page: "admin.html" },
+      "jackky": { password: "abcd", page: "jackky.html" }
+    };
 
     function login() {
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
+      const u = document.getElementById("username").value.trim().toLowerCase();
+      const p = document.getElementById("password").value.trim();
+      const user = users[u];
 
-      if (!username || !password) {
-        document.getElementById("error").innerText = "กรุณากรอกข้อมูลให้ครบถ้วน";
-        return;
+      if (user && user.password === p) {
+        localStorage.setItem("username", u); // ✅ บันทึกชื่อผู้ใช้ไว้
+        window.location.href = user.page;
+      } else {
+        document.getElementById("error").innerText = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
       }
-
-      fetch(`${loginURL}?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            localStorage.setItem("username", data.username);
-            window.location.href = data.redirectPage || "dashboard.html";
-          } else {
-            document.getElementById("error").innerText = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          document.getElementById("error").innerText = "⚠️ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์";
-        });
     }
   </script>
+
 </body>
 </html>

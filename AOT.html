@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>AOT Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: 'Prompt', sans-serif;
       margin: 0;
       background: #f5f5f5;
     }
@@ -41,11 +42,58 @@
     .logout-btn:hover {
       background-color: #b71540;
     }
+    .container {
+      padding: 20px;
+    }
+    .btn {
+      padding: 10px 15px;
+      margin: 5px;
+      background: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #1c5980;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ccc;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    #searchInput {
+      padding: 10px;
+      width: 100%;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
 
-  <!-- ✅ ส่วนหัว -->
   <div class="header">
     <div class="header-left">
       <img src="Img/LOGOTHEGREAT.png" alt="Logo">
@@ -57,27 +105,126 @@
     </div>
   </div>
 
-  <!-- ✅ เนื้อหาหลัก -->
-  <div style="padding: 30px;">
-    <h3>📋 หน้านี้แสดงเฉพาะ User ที่ Login เข้ามา</h3>
-    <!-- เพิ่มฟีเจอร์อื่น ๆ ที่คุณต้องการได้ที่นี่ -->
+  <div class="container">
+    <button class="btn" onclick="loadData()">หน้าหลัก</button>
+    <button class="btn" onclick="toggleForm()">บันทึกข้อมูล</button>
+
+    <input type="text" id="searchInput" placeholder="🔍 ค้นหาลูกค้า..." oninput="filterTable()">
+
+    <div id="form-section" style="display:none; margin-top:20px;">
+      <h3>แบบฟอร์มบันทึกข้อมูลลูกค้า</h3>
+      <div class="form-group"><label>วันที่:</label><input type="date" id="date"></div>
+      <div class="form-group"><label>แหล่งที่มา:</label>
+        <select id="source">
+          <option>Walk In สาขา 1</option>
+          <option>Walk In สาขา 2</option>
+          <option>ลูกค้านายหน้า</option>
+          <option>ลูกค้าส่วนตัว</option>
+          <option>ลูกค้าเพจและช่องทางออนไลน์</option>
+        </select>
+      </div>
+      <div class="form-group"><label>ชื่อ-สกุล ลูกค้า:</label><input type="text" id="name"></div>
+      <div class="form-group"><label>เบอร์ติดต่อ / Line:</label><input type="text" id="phone"></div>
+      <div class="form-group"><label>จังหวัด:</label><input type="text" id="province"></div>
+      <div class="form-group"><label>รายละเอียดรถ/รุ่นรถ/ทะเบียน:</label><input type="text" id="car"></div>
+      <div class="form-group"><label>Cash/FN:</label>
+        <select id="cashfn"><option>ไฟแนนซ์</option><option>ซื้อสด</option></select>
+      </div>
+      <div class="form-group"><label>Status:</label>
+        <select id="status">
+          <option>Booking</option>
+          <option>Hot</option>
+          <option>Approve</option>
+          <option>ยกเลิกรายการ</option>
+        </select>
+      </div>
+      <div class="form-group"><label>รายละเอียดการติดตาม:</label><textarea id="followup"></textarea></div>
+      <button class="btn" onclick="submitData()">บันทึก</button>
+    </div>
+
+    <table id="data-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>วันที่</th><th>แหล่งที่มา</th><th>ชื่อ</th><th>ติดต่อ</th><th>จังหวัด</th>
+          <th>รถ</th><th>Cash/FN</th><th>Status</th><th>ติดตาม</th><th>จัดการ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <script>
-    // ✅ ตรวจสอบการ Login และแสดงชื่อผู้ใช้
+    const scriptURL = "https://script.google.com/macros/s/AKfycby7zYWltf5mu526aKHI4Mx19kPdC-5ALjX_mWE33NZ39pIvFQk4MfMW3MTgbyLjIYvxkA/exec";
+
     const username = localStorage.getItem("username");
     if (!username) {
-      alert("⚠️ กรุณาเข้าสู่ระบบก่อน");
-      window.location.href = "login.html";
+      alert("⚠️ กรุณาเข้าสู่ระบบก่อนใช้งาน");
+      window.location.href = "index.html";
     } else {
       document.getElementById("usernameDisplay").textContent = username;
     }
 
     function logout() {
       localStorage.clear();
-      window.location.href = "login.html";
+      window.location.href = "index.html";
+    }
+
+    function toggleForm() {
+      document.getElementById("form-section").style.display = "block";
+    }
+
+    function loadData() {
+      fetch(scriptURL)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector("#data-table tbody");
+          tbody.innerHTML = "";
+          data.forEach(entry => {
+            const row = `<tr>
+              <td>${entry.date}</td><td>${entry.source}</td><td>${entry.name}</td>
+              <td>${entry.phone}</td><td>${entry.province}</td><td>${entry.car}</td>
+              <td>${entry.cashfn}</td><td>${entry.status}</td><td>${entry.followup}</td>
+              <td><button onclick="editData(${entry.row})">✏️</button> <button onclick="deleteData(${entry.row})">🗑</button></td>
+            </tr>`;
+            tbody.innerHTML += row;
+          });
+          document.getElementById("data-table").style.display = "table";
+        });
+    }
+
+    function submitData() {
+      const data = {
+        date: document.getElementById("date").value,
+        source: document.getElementById("source").value,
+        name: document.getElementById("name").value,
+        phone: document.getElementById("phone").value,
+        province: document.getElementById("province").value,
+        car: document.getElementById("car").value,
+        cashfn: document.getElementById("cashfn").value,
+        status: document.getElementById("status").value,
+        followup: document.getElementById("followup").value
+      };
+
+      fetch(scriptURL, {
+        method: "POST",
+        body: JSON.stringify(data)
+      })
+      .then(res => res.text())
+      .then(() => {
+        alert("✅ บันทึกข้อมูลเรียบร้อยแล้ว");
+        loadData();
+      });
+    }
+
+    function filterTable() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const rows = document.querySelectorAll("#data-table tbody tr");
+      rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll("td")).slice(0, 9);
+        const match = cells.some(cell => cell.textContent.toLowerCase().includes(keyword));
+        row.style.display = match ? "" : "none";
+      });
     }
   </script>
-
 </body>
 </html>
