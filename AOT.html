@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ระบบลูกค้าจาก Google Sheet</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 30px;
+      background: #f5f5f5;
+      color: #333;
+    }
+    h2, h3 {
+      text-align: center;
+      color: #0a3d62;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      background-color: #0a3d62;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin-top: 15px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #3c6382;
+    }
+    .menu {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .menu button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      font-size: 16px;
+    }
+    .form-section {
+      display: none;
+    }
+    .action-buttons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .action-buttons button {
+      margin-left: 5px;
+      background-color: #ccc;
+      color: black;
+      padding: 5px 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="text-align: center;">
+    <img src="Img/LOGOTHEGREAT.png" alt="โลโก้" style="width: 120px; margin-bottom: 10px;">
+  </div>
+
+  <h2>📋 ระบบลูกค้า</h2>
+
+  <div class="menu">
+    <button onclick="showSection('home')">🏠 หน้าหลัก</button>
+    <button onclick="showSection('search')">🔍 ค้นหาข้อมูล</button>
+    <button onclick="showSection('add')">➕ เพิ่มข้อมูล</button>
+  </div>
+
+  <div id="searchSection" class="form-section">
+    <h3>ค้นหาข้อมูลลูกค้า</h3>
+    <input type="text" id="searchName" placeholder="ค้นหาชื่อ...">
+    <input type="text" id="searchPhone" placeholder="ค้นหาเบอร์โทร...">
+    <input type="text" id="searchProvince" placeholder="ค้นหาจังหวัด...">
+    <button onclick="searchCustomer()">🔍 ค้นหา</button>
+  </div>
+
+  <div id="addSection" class="form-section">
+    <h3>เพิ่ม / แก้ไข ลูกค้า</h3>
+    <form id="customerForm" class="card">
+      <input type="hidden" name="row" id="row">
+      <label>วันที่</label><input type="date" name="date" id="date">
+      <label>แหล่งที่มา</label>
+      <select name="source" id="source">
+        <option>Walk In สาขา 1</option>
+        <option>Walk In สาขา 2</option>
+        <option>ลูกค้านายหน้า</option>
+        <option>ลูกค้าส่วนตัว</option>
+        <option>ลูกค้าเพจและช่องทางออนไลน์</option>
+      </select>
+      <label>ชื่อ-สกุล</label><input type="text" name="name" id="name">
+      <label>เบอร์ติดต่อ / Line</label><input type="text" name="phone" id="phone">
+      <label>จังหวัด</label><input type="text" name="province" id="province">
+      <label>รายละเอียดรถ</label><input type="text" name="car" id="car">
+      <label>Cash/FN</label>
+      <select name="cashfn" id="cashfn">
+        <option>ไฟแนนซ์</option>
+        <option>ซื้อสด</option>
+      </select>
+      <label>Status</label>
+      <select name="status" id="status">
+        <option>Booking</option>
+        <option>Hot</option>
+        <option>Approve</option>
+        <option>ยกเลิกรายการ</option>
+      </select>
+      <label>รายละเอียดการติดตาม</label>
+      <textarea name="followup" id="followup" rows="3"></textarea>
+      <button type="submit">💾 บันทึกข้อมูล</button>
+    </form>
+  </div>
+
+  <h3>📄 รายการลูกค้าทั้งหมด</h3>
+  <div id="customerList"></div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbw5CJfoUjcIhJMTidIjQKL0_YbTjg9hD-U7zWAD9bHXG_P0nlCReokvxLnRwLqct9YYGA/exec";
+    let allCustomers = [];
+
+    function showSection(section) {
+      document.getElementById('searchSection').style.display = section === 'search' ? 'block' : 'none';
+      document.getElementById('addSection').style.display = section === 'add' ? 'block' : 'none';
+      if (section === 'home') {
+        loadCustomers();
+      }
+    }
+
+    function loadCustomers() {
+      fetch(scriptURL)
+        .then(res => res.json())
+        .then(data => {
+          allCustomers = data;
+          displayCustomers(data);
+        });
+    }
+
+    function displayCustomers(data) {
+      const list = document.getElementById("customerList");
+      list.innerHTML = "";
+      data.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <div class="action-buttons">
+            <button onclick='editCustomer(${JSON.stringify(c)})'>✏️</button>
+            <button onclick='deleteCustomer(${c.row})'>🗑</button>
+          </div>
+          <b>👤 ${c.name}</b> | ${c.phone}<br>
+          🚗 ${c.car}<br>
+          📆 ${c.date} | จ.${c.province}<br>
+          แหล่งที่มา: ${c.source}<br>
+          💰 ${c.cashfn} | สถานะ: ${c.status}<br>
+          📌 ติดตาม: ${c.followup}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function editCustomer(data) {
+      showSection('add');
+      for (const key in data) {
+        if (document.getElementById(key)) {
+          document.getElementById(key).value = data[key];
+        }
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteCustomer(row) {
+      if (confirm("คุณต้องการลบข้อมูลนี้หรือไม่?")) {
+        fetch(scriptURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ row, delete: true })
+        }).then(() => {
+          alert("🗑 ลบข้อมูลสำเร็จ");
+          loadCustomers();
+        });
+      }
+    }
+
+    document.getElementById("customerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(this));
+      fetch(scriptURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      })
+      .then(() => {
+        alert("✅ บันทึกข้อมูลสำเร็จ");
+        this.reset();
+        document.getElementById("row").value = "";
+        loadCustomers();
+        showSection('home');
+      });
+    });
+
+    function searchCustomer() {
+      const name = document.getElementById("searchName").value.toLowerCase();
+      const phone = document.getElementById("searchPhone").value.toLowerCase();
+      const province = document.getElementById("searchProvince").value.toLowerCase();
+      const filtered = allCustomers.filter(c =>
+        (!name || c.name.toLowerCase().includes(name)) &&
+        (!phone || c.phone.toLowerCase().includes(phone)) &&
+        (!province || c.province.toLowerCase().includes(province))
+      );
+      displayCustomers(filtered);
+    }
+
+    loadCustomers();
+    showSection('home');
+  </script>
+
+</body>
+</html>
