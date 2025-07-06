@@ -11,6 +11,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      flex-direction: column;
     }
     .login-box {
       background: white;
@@ -31,14 +32,24 @@
     }
     button:hover { background: #3c6382; }
     .error { color: red; margin-top: 10px; text-align: center; }
+    .logo {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo img {
+      width: 100px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
-
+  <div class="logo">
+    <img src="Img/LOGOTHEGREAT.png" alt="โลโก้">
+    <h2>เข้าสู่ระบบ</h2>
+  </div>
 
   <div class="login-box">
-    <h2>เข้าสู่ระบบ</h2>
     <input type="text" id="username" placeholder="ชื่อผู้ใช้" />
     <input type="password" id="password" placeholder="รหัสผ่าน" />
     <button onclick="login()">🔐 เข้าสู่ระบบ</button>
@@ -46,7 +57,7 @@
   </div>
 
   <script>
-    const loginURL = "https://script.google.com/macros/s/AKfycbzHUj4TXDwG9atWJVm_9S1x70VMiC6UvvkXpgCGso100nBD7WGEqmGGTBjv3IrkeTIQjw/exec";
+    const loginURL = "https://script.google.com/macros/s/AKfycby7zYWltf5mu526aKHI4Mx19kPdC-5ALjX_mWE33NZ39pIvFQk4MfMW3MTgbyLjIYvxkA/exec";
 
     function login() {
       const username = document.getElementById("username").value.trim();
@@ -64,7 +75,7 @@
           localStorage.setItem("page", data.redirectPage);
           window.location.href = data.redirectPage || "dashboard.html";
         } else {
-          document.getElementById("error").innerText = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+          document.getElementById("error").innerText = "❌ " + (data.message || "เข้าสู่ระบบไม่สำเร็จ");
         }
       })
       .catch(() => {
