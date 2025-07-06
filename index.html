@@ -1,59 +1,75 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <title>เข้าสู่ระบบ</title>
+  <meta charset="UTF-8">
+  <title>เข้าสู่ระบบ - THE GREAT AUTO</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f0f0f0;
+      background: #f7f7f7;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      flex-direction: column;
     }
     .login-box {
       background: white;
       padding: 30px;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      width: 320px;
-    }
-    h2 { text-align: center; color: #0a3d62; }
-    input {
-      width: 100%; padding: 10px; margin-top: 10px;
-      border: 1px solid #ccc; border-radius: 6px;
-    }
-    button {
-      width: 100%; padding: 12px; background: #0a3d62;
-      color: white; border: none; margin-top: 15px;
-      border-radius: 6px; cursor: pointer;
-    }
-    button:hover { background: #3c6382; }
-    .error { color: red; margin-top: 10px; text-align: center; }
-    .logo {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 340px;
       text-align: center;
+    }
+    .logo {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+    h2 {
+      color: #0a3d62;
       margin-bottom: 20px;
     }
-    .logo img {
-      width: 100px;
-      margin-bottom: 10px;
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background: #0a3d62;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3c6382;
+    }
+    .error {
+      color: red;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .brand {
+      font-weight: bold;
+      color: #d4af37;
+      margin-top: 5px;
+      font-size: 13px;
     }
   </style>
 </head>
 <body>
-
-  <div class="logo">
-    <img src="Img/LOGOTHEGREAT.png" alt="โลโก้">
-    <h2>เข้าสู่ระบบ</h2>
-  </div>
-
   <div class="login-box">
-    <input type="text" id="username" placeholder="ชื่อผู้ใช้" />
-    <input type="password" id="password" placeholder="รหัสผ่าน" />
+    <img src="logo.png" alt="THE GREAT AUTO" class="logo" />
+    <div class="brand">THE GREAT AUTO</div>
+    <h2>เข้าสู่ระบบ</h2>
+    <input type="text" id="username" placeholder="ชื่อผู้ใช้">
+    <input type="password" id="password" placeholder="รหัสผ่าน">
     <button onclick="login()">🔐 เข้าสู่ระบบ</button>
-    <div id="error" class="error"></div>
+    <div class="error" id="error"></div>
   </div>
 
   <script>
@@ -63,26 +79,26 @@
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
 
-      fetch(loginURL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          localStorage.setItem("username", data.username);
-          localStorage.setItem("page", data.redirectPage);
-          window.location.href = data.redirectPage || "dashboard.html";
-        } else {
-          document.getElementById("error").innerText = "❌ " + (data.message || "เข้าสู่ระบบไม่สำเร็จ");
-        }
-      })
-      .catch(() => {
-        document.getElementById("error").innerText = "⚠️ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์";
-      });
+      if (!username || !password) {
+        document.getElementById("error").innerText = "กรุณากรอกข้อมูลให้ครบถ้วน";
+        return;
+      }
+
+      fetch(`${loginURL}?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            localStorage.setItem("username", data.username);
+            window.location.href = data.redirectPage || "dashboard.html";
+          } else {
+            document.getElementById("error").innerText = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("error").innerText = "⚠️ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์";
+        });
     }
   </script>
-
 </body>
 </html>
