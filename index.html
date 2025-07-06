@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>เข้าสู่ระบบ</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 320px;
+    }
+    h2 { text-align: center; color: #0a3d62; }
+    input {
+      width: 100%; padding: 10px; margin-top: 10px;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    button {
+      width: 100%; padding: 12px; background: #0a3d62;
+      color: white; border: none; margin-top: 15px;
+      border-radius: 6px; cursor: pointer;
+    }
+    button:hover { background: #3c6382; }
+    .error { color: red; margin-top: 10px; text-align: center; }
+  </style>
+</head>
+<body>
+
+
+
+  <div class="login-box">
+    <h2>เข้าสู่ระบบ</h2>
+    <input type="text" id="username" placeholder="ชื่อผู้ใช้" />
+    <input type="password" id="password" placeholder="รหัสผ่าน" />
+    <button onclick="login()">🔐 เข้าสู่ระบบ</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <script>
+    const loginURL = "https://script.google.com/macros/s/AKfycbzHUj4TXDwG9atWJVm_9S1x70VMiC6UvvkXpgCGso100nBD7WGEqmGGTBjv3IrkeTIQjw/exec";
+
+    function login() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      fetch(loginURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.setItem("username", data.username);
+          localStorage.setItem("page", data.redirectPage);
+          window.location.href = data.redirectPage || "dashboard.html";
+        } else {
+          document.getElementById("error").innerText = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+        }
+      })
+      .catch(() => {
+        document.getElementById("error").innerText = "⚠️ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์";
+      });
+    }
+  </script>
+
+</body>
+</html>
